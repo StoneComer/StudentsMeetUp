@@ -1,0 +1,149 @@
+<div class="dashboard-container">
+  <!-- Карточка пользователя -->
+  <div class="user-card-section mb-4">
+    <div class="user-card">
+      <div class="user-header d-flex align-items-center">
+        <img src="https://cdn-icons-png.flaticon.com/512/149/149071.png" class="user-avatar" alt="Avatar">
+        <div class="user-info">
+          <h2 class="user-name">{{ user.username || 'Гость' }}</h2>
+          <p class="user-email">Email: {{ user.email }}</p>
+        </div>
+      </div>
+      <div class="user-telegram-section">
+        <div class="telegram-info">
+          <h6 *ngIf="user.telegramId" class="telegram-connected">
+            ✅ Телеграм ID: {{ user.telegramId }}
+          </h6>
+          <h6 *ngIf="!user.telegramId" class="telegram-not-connected">
+            ❌ Телеграм не подключен
+          </h6>
+          <p *ngIf="!user.telegramId" class="telegram-instruction">
+            Отправьте боту <code>/start {{ session_state }}</code>
+          </p>
+        </div>
+        <a href="https://t.me/reminder_evo_notification_bot" target="_blank" class="btn btn-telegram">
+          🚀 Перейти в Telegram бота
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Таблица с поиском и пагинацией -->
+  <div class="reminders-section">
+    <div class="table-controls d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+      <div class="search-container position-relative">
+        <input type="text" 
+               class="form-control search-input" 
+               placeholder="🔍 Поиск по названию или описанию..."
+               #searchInput>
+        <button class="btn-clear">
+          ✕
+        </button>
+      </div>
+      <div class="table-stats">
+        <span class="records-info">
+          1 из 2 напоминаний
+        </span>
+      </div>
+      <button class="btn btn-success btn-sm" >
+        🔄 Обновить
+      </button>
+    </div>
+
+    <div class="table-wrapper">
+      <div class="table-responsive">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 8%;">#</th>
+              <th style="width: 12%;">ID</th>
+              <th style="width: 20%;">Название</th>
+              <th style="width: 30%;">Описание</th>
+              <th style="width: 18%;">Дата напоминания</th>
+              <th style="width: 12%;">Действия</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let reminder of reminders; let i = index">
+              <td>{{ i }}</td>
+              <td>{{ reminder.id }}</td>
+              <td class="title-cell">
+                <strong>{{ reminder.title }}</strong>
+              </td>
+              <td class="description-cell" [title]="reminder.description">
+                {{ reminder.description | slice:0:50 }}{{ reminder.description.length > 50 ? '...' : '' }}
+              </td>
+              <td>
+                <span>
+                  {{ reminder.remind | date:'dd.MM HH:mm' }}
+                </span>
+              </td>
+              <td class="action-buttons">
+                <button class="btn btn-edit me-1" 
+                        title="Редактировать">
+                  ✏️
+                </button>
+                <button class="btn btn-delete" 
+                        title="Удалить">
+                  🗑️
+                </button>
+              </td>
+            </tr>
+            <tr *ngIf="reminders.length === 0" class="no-data-row">
+              <td colspan="6" class="text-center py-5 text-muted">
+                📭 Нет напоминаний
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Пагинация -->
+    <!-- <div class="pagination-container mt-4" *ngIf="totalPages > 1">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div class="pagination-info">
+          Страница {{ currentPage }} из {{ totalPages }} ({{ itemsPerPage }}/стр)
+        </div>
+        
+        <nav aria-label="Пагинация">
+          <ul class="pagination mb-0">
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <button class="page-link" (click)="goToFirstPage()" [disabled]="currentPage === 1">
+                ⏮️
+              </button>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === 1">
+              <button class="page-link" (click)="previousPage()" [disabled]="currentPage === 1">
+                ‹
+              </button>
+            </li>
+            <li class="page-item active" aria-current="page">
+              <span class="page-link">{{ currentPage }}</span>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <button class="page-link" (click)="nextPage()" [disabled]="currentPage === totalPages">
+                ›
+              </button>
+            </li>
+            <li class="page-item" [class.disabled]="currentPage === totalPages">
+              <button class="page-link" (click)="goToLastPage()" [disabled]="currentPage === totalPages">
+                ⏭️
+              </button>
+            </li>
+          </ul>
+        </nav>
+        
+        <div class="per-page-selector d-flex align-items-center gap-2">
+          <label class="mb-0 fw-medium">Показать:</label>
+          <select class="form-select form-select-sm" [(ngModel)]="itemsPerPage" (change)="onItemsPerPageChange()">
+            <option [value]="10">10</option>
+            <option [value]="25">25</option>
+            <option [value]="50">50</option>
+            <option [value]="100">100</option>
+          </select>
+        </div>
+      </div>
+    </div> -->
+  </div>
+</div>

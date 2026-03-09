@@ -1,0 +1,96 @@
+<div class="card border-0" style="display: flex; width: 100%; height: calc(100vh - 400px); flex-flow: column;">
+  <div>
+    <div class="card-body" style="margin: auto; text-align: center; width: 70%;">
+      <h1 class="card-title" style="font-weight: bolder;
+      letter-spacing: 0em;">Вход в личный кабинет</h1>
+      <br>
+      <div class="input-group">
+        <input
+        required
+        #email="ngModel"
+        [(ngModel)]="login.email"
+        type="text"
+        class="form-control"
+        placeholder="email"
+        aria-label="Электронная почта"
+        aria-describedby="basic-addon1">
+        <br>
+      </div>
+      <div *ngIf="email.invalid && (email.dirty || email.touched)">
+        <div
+        *ngIf="email.hasError('required')"
+        class="alert alert-danger mt-2"
+        role="alert"
+        >
+        Поле должно быть заполнено
+        </div>
+      </div>
+      <div class="input-group">
+        <input
+        required
+        #secondName="ngModel"
+        [(ngModel)]="login.username"
+        type="text"
+        class="form-control"
+        placeholder="username"
+        aria-label="Логин"
+        aria-describedby="basic-addon1">
+        <br>
+      </div>
+      <div *ngIf="secondName.invalid && (secondName.dirty || secondName.touched)">
+        <div
+        *ngIf="secondName.hasError('required')"
+        class="alert alert-danger mt-2"
+        role="alert"
+        >
+        Поле должно быть заполнено
+        </div>
+      </div>
+      <div class="input-group">
+        <input type="text"
+        minlength="1"
+        pattern="[a-zA-Zа-яА-ЯеЁ0-9]*"
+        required
+        #firstName="ngModel"
+        name="name"
+        [(ngModel)]="login.password"
+        type="text"
+        class="form-control"
+        placeholder="Password"
+        aria-label="Пароль"
+        aria-describedby="basic-addon1">
+      </div>
+      <div *ngIf="firstName.invalid && (firstName.dirty || firstName.touched)">
+        <div
+          *ngIf="firstName.hasError('minlength')"
+          class="alert alert-danger mt-2"
+          role="alert"
+        >
+          Минимальная длинна должна быть больше 1 символа
+        </div>
+        <div
+          *ngIf="firstName.hasError('required')"
+          class="alert alert-danger mt-2"
+          role="alert"
+        >
+          Поле должно быть заполнено
+        </div>
+        <div
+          *ngIf="firstName.hasError('pattern')"
+          class="alert alert-danger mt-2"
+          role="alert"
+        >
+          Поле не должно содержать спец. символов
+        </div>
+      </div>
+      <br>
+      <button class="btn btn-primary" style="width: 40%;" (click)="logIn()">Войти</button>
+      <br>
+      <!-- <form>
+        <div class="bg-danger" style="border-radius: 5px; margin-top: 5px;" [ngClass]="{invisible: visibility}">
+            Неверный логин или пароль
+        </div>
+      </form> -->
+    </div>
+  </div>
+</div>
