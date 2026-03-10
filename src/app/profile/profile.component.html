@@ -24,116 +24,154 @@
         <a href="https://t.me/reminder_evo_notification_bot" target="_blank" class="btn btn-telegram">
           🚀 Перейти в Telegram бота
         </a>
+        <button class="btn btn-telegram">
+          🔄 Обновить
+        </button>
       </div>
     </div>
   </div>
 
-  <!-- Таблица с поиском и пагинацией -->
   <div class="reminders-section">
+    <!-- Controls -->
     <div class="table-controls d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-      <div class="search-container position-relative">
-        <input type="text" 
-               class="form-control search-input" 
-               placeholder="🔍 Поиск по названию или описанию..."
-               #searchInput>
-        <button class="btn-clear">
+      <!-- Search -->
+      <!-- Search с подсказкой -->
+      <div class="search-container position-relative flex-grow-1 me-2" style="max-width: 400px;">
+        <input type="text"
+               class="form-control search-input"
+               placeholder="🔍 Поиск: 'название описание' или просто 'название'..."
+               [(ngModel)]="combinedSearch"
+               #searchInput
+               (keyup.enter)="onSearch()">
+        <button class="btn-clear" (click)="clearSearch()" *ngIf="combinedSearch">
           ✕
         </button>
       </div>
+
+
+      <!-- Stats -->
       <div class="table-stats">
-        <span class="records-info">
-          1 из 2 напоминаний
-        </span>
+        <span class="records-info">{{ recordsInfo }}</span>
       </div>
-      <button class="btn btn-success btn-sm" >
+
+      <button class="btn btn-success btn-sm me-2" (click)="openCreateModal()">
+        ➕ Создать напоминание
+      </button>
+
+      <!-- Refresh -->
+      <button class="btn btn-outline-primary btn-sm" (click)="loadReminders()">
         🔄 Обновить
       </button>
     </div>
 
+    <!-- Table -->
     <div class="table-wrapper">
       <div class="table-responsive">
         <table class="data-table">
           <thead>
-            <tr>
-              <th style="width: 8%;">#</th>
-              <th style="width: 12%;">ID</th>
-              <th style="width: 20%;">Название</th>
-              <th style="width: 30%;">Описание</th>
-              <th style="width: 18%;">Дата напоминания</th>
-              <th style="width: 12%;">Действия</th>
-            </tr>
+          <tr>
+            <th style="width: 8%;">#</th>
+            <th style="width: 12%;">
+              ID
+            </th>
+            <th style="width: 20%;">
+              Название
+              <button class="btn-sort ms-1" (click)="onSort('name')"
+                      [class.sorted]="sortBy === 'name'"
+                      [class.sort-asc]="sortBy === 'name' && sortDirection === 'asc'"
+                      [class.sort-desc]="sortBy === 'name' && sortDirection === 'desc'">
+                ↕️ {{ sortIcon }}
+              </button>
+            </th>
+            <th style="width: 30%;">
+              Описание
+            </th>
+            <th style="width: 18%;">
+              Дата напоминания
+              <button class="btn-sort ms-1" (click)="onSort('date')"
+                      [class.sorted]="sortBy === 'date'"
+                      [class.sort-asc]="sortBy === 'date' && sortDirection === 'asc'"
+                      [class.sort-desc]="sortBy === 'date' && sortDirection === 'desc'">
+                ↕️ {{ sortIcon }}
+              </button>
+            </th>
+            <th style="width: 12%;">Действия</th>
+          </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let reminder of reminders; let i = index">
-              <td>{{ i }}</td>
-              <td>{{ reminder.id }}</td>
-              <td class="title-cell">
-                <strong>{{ reminder.title }}</strong>
-              </td>
-              <td class="description-cell" [title]="reminder.description">
-                {{ reminder.description | slice:0:50 }}{{ reminder.description.length > 50 ? '...' : '' }}
-              </td>
-              <td>
-                <span>
-                  {{ reminder.remind | date:'dd.MM HH:mm' }}
-                </span>
-              </td>
-              <td class="action-buttons">
-                <button class="btn btn-edit me-1" 
-                        title="Редактировать">
-                  ✏️
-                </button>
-                <button class="btn btn-delete" 
-                        title="Удалить">
-                  🗑️
-                </button>
-              </td>
-            </tr>
-            <tr *ngIf="reminders.length === 0" class="no-data-row">
-              <td colspan="6" class="text-center py-5 text-muted">
-                📭 Нет напоминаний
-              </td>
-            </tr>
+          <tr *ngFor="let reminder of reminders; let i = index">
+            <td>{{ (currentPage * itemsPerPage) + i + 1 }}</td>
+            <td>{{ reminder.id }}</td>
+            <td class="title-cell">
+              <strong>{{ reminder.title }}</strong>
+            </td>
+            <td class="description-cell" [title]="reminder.description">
+              {{ reminder.description | slice:0:50 }}{{ reminder.description.length > 50 ? '...' : '' }}
+            </td>
+            <td>
+              <span>{{ reminder.remind | date:'dd.MM.YYYY HH:mm' }}</span>
+            </td>
+            <td class="action-buttons">
+              <button class="btn btn-edit me-1"
+                      (click)="openEditModal(reminder)"
+                      title="Редактировать">
+                ✏️
+              </button>
+              <button class="btn btn-delete"
+                      (click)="openDeleteModal(reminder.id)"
+                      title="Удалить">
+                🗑️
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="reminders.length === 0" class="no-data-row">
+            <td colspan="6" class="text-center py-5 text-muted">
+              📭 Нет напоминаний
+            </td>
+          </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- Пагинация -->
-    <!-- <div class="pagination-container mt-4" *ngIf="totalPages > 1">
+    <!-- Pagination -->
+    <div class="pagination-container mt-4" *ngIf="totalPages > 1">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <!-- Info -->
         <div class="pagination-info">
-          Страница {{ currentPage }} из {{ totalPages }} ({{ itemsPerPage }}/стр)
+          Страница {{ currentPage + 1 }} из {{ totalPages }}
         </div>
-        
+
+        <!-- Pagination buttons -->
         <nav aria-label="Пагинация">
           <ul class="pagination mb-0">
-            <li class="page-item" [class.disabled]="currentPage === 1">
-              <button class="page-link" (click)="goToFirstPage()" [disabled]="currentPage === 1">
+            <li class="page-item" [class.disabled]="currentPage === 0">
+              <button class="page-link" (click)="goToFirstPage()" [disabled]="currentPage === 0">
                 ⏮️
               </button>
             </li>
-            <li class="page-item" [class.disabled]="currentPage === 1">
-              <button class="page-link" (click)="previousPage()" [disabled]="currentPage === 1">
+            <li class="page-item" [class.disabled]="currentPage === 0">
+              <button class="page-link" (click)="previousPage()" [disabled]="currentPage === 0">
                 ‹
               </button>
             </li>
             <li class="page-item active" aria-current="page">
-              <span class="page-link">{{ currentPage }}</span>
+              <span class="page-link">{{ currentPage + 1 }}</span>
             </li>
-            <li class="page-item" [class.disabled]="currentPage === totalPages">
-              <button class="page-link" (click)="nextPage()" [disabled]="currentPage === totalPages">
+            <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+              <button class="page-link" (click)="nextPage()" [disabled]="currentPage === totalPages - 1">
                 ›
               </button>
             </li>
-            <li class="page-item" [class.disabled]="currentPage === totalPages">
-              <button class="page-link" (click)="goToLastPage()" [disabled]="currentPage === totalPages">
+            <li class="page-item" [class.disabled]="currentPage === totalPages - 1">
+              <button class="page-link" (click)="goToLastPage()" [disabled]="currentPage === totalPages - 1">
                 ⏭️
               </button>
             </li>
           </ul>
         </nav>
-        
+
+        <!-- Items per page -->
         <div class="per-page-selector d-flex align-items-center gap-2">
           <label class="mb-0 fw-medium">Показать:</label>
           <select class="form-select form-select-sm" [(ngModel)]="itemsPerPage" (change)="onItemsPerPageChange()">
@@ -144,6 +182,131 @@
           </select>
         </div>
       </div>
-    </div> -->
+    </div>
+  </div>
+
+</div>
+
+<!-- Модальное окно редактирования -->
+<div class="modal-backdrop" *ngIf="showEditModal" (click)="closeEditModal()"></div>
+<div class="modal-container" *ngIf="showEditModal">
+  <div class="modal-header">
+    <h5>Редактировать напоминание</h5>
+    <button class="btn-close" (click)="closeEditModal()">×</button>
+  </div>
+  <div class="modal-body">
+    <div class="mb-3">
+      <label class="form-label">Название *</label>
+      <input type="text" class="form-control"
+             [(ngModel)]="editForm.title"
+             name="title"
+             placeholder="Введите название напоминания">
+      <div class="invalid-feedback" *ngIf="!editForm.title.trim()">
+        Название обязательно
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Описание</label>
+      <textarea class="form-control" rows="3"
+                [(ngModel)]="editForm.description"
+                name="description"
+                placeholder="Описание напоминания..."></textarea>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Дата *</label>
+        <input type="date" class="form-control"
+               [value]="editForm.remind.slice(0,10)"
+               (change)="onDateChange($event)"
+               min="2026-01-01"
+               max="2030-12-31">
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Время *</label>
+        <input type="time" class="form-control"
+               [value]="editForm.remind.slice(11,16)"
+               (change)="onTimeChange($event)">
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-secondary" (click)="closeEditModal()">Отмена</button>
+    <button class="btn btn-primary" (click)="saveReminder()"
+            [disabled]="!editForm.title.trim()">
+      💾 Сохранить
+    </button>
+  </div>
+</div>
+
+<div class="modal-backdrop" *ngIf="showCreateModal" (click)="closeCreateModal()"></div>
+<div class="modal-container" *ngIf="showCreateModal">
+  <div class="modal-header bg-success text-white">
+    <h5>➕ Создать новое напоминание</h5>
+    <button class="btn-close btn-close-white" (click)="closeCreateModal()">×</button>
+  </div>
+  <div class="modal-body">
+    <div class="mb-3">
+      <label class="form-label">Название *</label>
+      <input type="text" class="form-control"
+             [(ngModel)]="createForm.title"
+             name="createTitle"
+             placeholder="Введите название напоминания">
+      <div class="invalid-feedback" *ngIf="!createForm.title.trim()">
+        Название обязательно
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Описание</label>
+      <textarea class="form-control" rows="3"
+                [(ngModel)]="createForm.description"
+                name="createDescription"
+                placeholder="Описание напоминания..."></textarea>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Дата *</label>
+        <input type="date" class="form-control"
+               [value]="createForm.remind.slice(0,10) || ''"
+               (change)="onCreateDateChange($event)"
+               min="2026-03-10">
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label">Время *</label>
+        <input type="time" class="form-control"
+               [value]="createForm.remind.slice(11,16) || ''"
+               (change)="onCreateTimeChange($event)">
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-secondary" (click)="closeCreateModal()">Отмена</button>
+    <button class="btn btn-success" (click)="createReminder()"
+            [disabled]="!createForm.title.trim()">
+      ✅ Создать
+    </button>
+  </div>
+</div>
+
+<!-- Модальное окно удаления -->
+<div class="modal-backdrop" *ngIf="showDeleteModal" (click)="closeDeleteModal()"></div>
+<div class="modal-container modal-sm" *ngIf="showDeleteModal">
+  <div class="modal-header bg-danger text-white">
+    <h5>🗑️ Удалить напоминание?</h5>
+    <button class="btn-close btn-close-white" (click)="closeDeleteModal()">×</button>
+  </div>
+  <div class="modal-body text-center">
+    <div class="delete-icon mb-3">🗑️</div>
+    <p class="mb-0">Вы уверены, что хотите удалить это напоминание?</p>
+    <p class="text-muted small">Действие нельзя отменить</p>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-secondary" (click)="closeDeleteModal()">Отмена</button>
+    <button class="btn btn-danger" (click)="deleteReminder()">
+      ✅ Удалить
+    </button>
   </div>
 </div>

@@ -27,6 +27,7 @@ import { Interceptor } from 'src/app/interceptor.interceptor'
     ProfileComponent,
   ],
   imports: [
+    FormsModule,
     BrowserModule,
     HttpClientModule,
     AppRoutingModule,

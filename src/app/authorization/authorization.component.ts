@@ -25,6 +25,7 @@ export class AuthorizationComponent {
       (response: any) => {
         localStorage.setItem('access_token', response.access_token);
         localStorage.setItem('session_state', response.session_state);
+        localStorage.setItem('refresh_token', response.refresh_token);
         this.router.navigate(['profile'])
       }
     );

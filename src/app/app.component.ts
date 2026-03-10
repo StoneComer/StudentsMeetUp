@@ -11,7 +11,7 @@ export class AppComponent{
   constructor(public auth: AuthService, private router: Router) {}
 
   public logOut() {
-    this.auth.logout(localStorage.getItem('access_token') || '').subscribe(
+    this.auth.logout(localStorage.getItem('refresh_token') || '').subscribe(
       (response) => {
         this.router.navigate(['login']);
       }
